@@ -11,6 +11,7 @@ import logging
 import os
 import sys
 import boto3
+import keyring
 
 from botocore.exceptions import ClientError, ParamValidationError
 from awsmfa.config import initial_setup
@@ -83,6 +84,10 @@ def main():
                         type=str,
                         help="Provide MFA token as an argument",
                         required=False)
+    parser.add_argument('--no-keychain',
+                        action="store_true",
+                        help="Do not use system keychain to store or retrieve long term credentials",
+                        required=False)
     args = parser.parse_args()
 
     level = getattr(logging, args.log_level)
@@ -103,7 +108,7 @@ def main():
     config = get_config(AWS_CREDS_PATH)
 
     if args.setup:
-        initial_setup(logger, config, AWS_CREDS_PATH)
+        initial_setup(logger, config, AWS_CREDS_PATH, args.no_keychain)
         return
 
     validate(args, config)
@@ -156,8 +161,12 @@ def validate(args, config):
     reup_message = "Obtaining credentials for a new role or profile."
 
     try:
-        key_id = config.get(long_term_name, 'aws_access_key_id')
-        access_key = config.get(long_term_name, 'aws_secret_access_key')
+        if args.no_keychain:
+            key_id = config.get(long_term_name, 'aws_access_key_id')
+            access_key = config.get(long_term_name, 'aws_secret_access_key')
+        else:
+            key_id = keyring.get_password('aws:access_key_id', long_term_name)
+            access_key = keyring.get_password('aws:secret_access_key', long_term_name)
     except NoSectionError:
         log_error_and_exit(logger,
                            "Long term credentials session '[%s]' is missing. "
