@@ -28,6 +28,7 @@ setup(
       'boto3',
       'keyring',
       'dbus-python',
-      'secretstorage'
+      "secretstorage < 3 ; python_version < '3.5'",
+      "secretstorage; python_version >= '3.5'"
     ]
 )
