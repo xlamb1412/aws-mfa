@@ -19,7 +19,7 @@ from awsmfa.util import log_error_and_exit, prompter
 
 logger = logging.getLogger('aws-mfa')
 
-AWS_CREDS_PATH = '%s/.aws/credentials' % (os.path.expanduser('~'),)
+AWS_CREDS_PATH = f"{os.path.expanduser('~')}/.aws/credentials"
 
 
 def main():
@@ -95,9 +95,9 @@ def main():
 
     if not os.path.isfile(AWS_CREDS_PATH):
         console_input = prompter()
-        create = console_input("Could not locate credentials file at {}, "
-                               "would you like to create one? "
-                               "[y/n]".format(AWS_CREDS_PATH))
+        create = console_input(
+            f"Could not locate credentials file at {AWS_CREDS_PATH}, would you like to create one? [y/n]"
+        )
         if create.lower() == "y":
             with open(AWS_CREDS_PATH, 'a'):
                 pass
